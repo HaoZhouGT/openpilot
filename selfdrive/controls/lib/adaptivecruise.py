@@ -1,6 +1,10 @@
 import math
 import numpy as np
 from common.numpy_fast import clip, interp
+from selfdrive.config import Conversions as CV
+
+
+
 # import selfdrive.messaging as messaging #66, should be deprecated
 
 # lookup tables VS speed to determine min and max accels in cruise
@@ -22,10 +26,10 @@ _A_TOTAL_MAX_BP = [0., 20., 40.]
 def limit_accel_in_turns(v_ego, angle_steers, a_target, a_pcm, CP):
   #*** this function returns a limited long acceleration allowed, depending on the existing lateral acceleration
   # this should avoid accelerating when losing the target in turns
-  deg_to_rad = np.pi / 180.  # from can reading to rad
+  # deg_to_rad = np.pi / 180.  # from can reading to rad
 
   a_total_max = interp(v_ego, _A_TOTAL_MAX_BP, _A_TOTAL_MAX_V)
-  a_y = v_ego**2 * angle_steers * deg_to_rad / (CP.steerRatio * CP.wheelBase)
+  a_y = v_ego**2 * angle_steers * CV.DEG_TO_RAD / (CP.steerRatio * CP.wheelbase)
   a_x_allowed = math.sqrt(max(a_total_max**2 - a_y**2, 0.))
 
   a_target[1] = min(a_target[1], a_x_allowed)
