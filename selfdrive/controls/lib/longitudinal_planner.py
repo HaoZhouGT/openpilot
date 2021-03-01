@@ -214,4 +214,9 @@ class Planner():
 
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.rcv_time['radarState']
 
+
+    ### try deprecated messages
+    longitudinalPlan.aTargetMinDEPRECATED = float(self.a_acc)
+    longitudinalPlan.aTargetMaxDEPRECATED = float(self.a_acc)
+
     pm.send('longitudinalPlan', plan_send)
