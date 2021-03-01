@@ -348,6 +348,7 @@ class AdaptiveCruise(object):
     self.dead = True
     self.a_target = [-3.0, 1.5] # default
     self.jerk_factor = 0.0
+    self.v_target_lead = 1.0
   def update(self, cur_time, v_ego, angle_steers, v_pid, CP, lead1, lead2):
     self.l1 = lead1
     self.l2 = lead2
@@ -359,9 +360,9 @@ class AdaptiveCruise(object):
       self.dead = True
 
     # now we try this function, see whether it can pass 
-    self.v_target_lead, self.a_target, self.a_pcm, self.jerk_factor = \
-      compute_speed_with_leads(v_ego, angle_steers, v_pid, self.l1, self.l2, CP)
-    self.has_lead = self.v_target_lead != MAX_SPEED_POSSIBLE
+    # self.v_target_lead, self.a_target, self.a_pcm, self.jerk_factor = \
+    #   compute_speed_with_leads(v_ego, angle_steers, v_pid, self.l1, self.l2, CP)
+    # self.has_lead = self.v_target_lead != MAX_SPEED_POSSIBLE
 
 
     ### if we comment this function, the error won't occur
