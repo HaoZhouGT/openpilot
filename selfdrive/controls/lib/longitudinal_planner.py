@@ -14,7 +14,6 @@ from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
 
-
 #66, add a new ACC planner 
 from selfdrive.controls.lib.adaptivecruise import AdaptiveCruise
 
@@ -129,8 +128,8 @@ class Planner():
     lead_2 = sm['radarState'].leadTwo
 
     # add an update step for the ACC controller
-    make sure all arguments can be accessed correctly 
-    self.AC.update(cur_time, v_ego, sm['carState'].steeringAngle, v_ego, CP, lead_1, lead_2)
+    # 66, not sure about lead_1 and lead_2
+    self.AC.update(cur_time, v_ego, sm['carState'].steeringAngle, v_ego, self.CP, lead_1, lead_2)
 
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
     following = lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
