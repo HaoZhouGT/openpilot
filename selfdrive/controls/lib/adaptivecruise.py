@@ -221,67 +221,6 @@ MAX_SPEED_POSSIBLE = 55.
 
 
 
-# def compute_speed_with_leads(v_ego, angle_steers, v_pid, l1, l2, CP):
-#   # drive limits
-#   # TODO: Make lims function of speed (more aggressive at low speed).
-#   a_lim = [-3., 1.5]
-
-#   #*** set target speed pretty high, as lead hasn't been considered yet
-#   v_target_lead = MAX_SPEED_POSSIBLE
-
-#   #*** set accel limits as cruise accel/decel limits ***
-#   a_target = calc_cruise_accel_limits(v_ego)
-#   # Always 1 for now.
-#   a_pcm = 1
-
-#   #*** limit max accel in sharp turns
-#   a_target, a_pcm = limit_accel_in_turns(v_ego, angle_steers, a_target, a_pcm, CP)
-#   jerk_factor = 0.
-
-#   if l1 is not None and l1.status:
-#     #*** process noisy a_lead signal from radar processing ***
-#     a_lead_p = process_a_lead(l1.aLeadK)
-
-#     #*** compute desired distance ***
-#     d_des = calc_desired_distance(l1.vLead)
-
-#     #*** compute desired speed ***
-#     v_target_lead, v_coast = calc_desired_speed(l1.dRel, d_des, l1.vLead, a_lead_p)
-
-#     if l2 is not None and l2.status:
-#       #*** process noisy a_lead signal from radar processing ***
-#       a_lead_p2 = process_a_lead(l2.aLeadK)
-
-#       #*** compute desired distance ***
-#       d_des2 = calc_desired_distance(l2.vLead)
-
-#       #*** compute desired speed ***
-#       v_target_lead2, v_coast2 = calc_desired_speed(l2.dRel, d_des2, l2.vLead, a_lead_p2)
-
-#       # listen to lead that makes you go slower
-#       if v_target_lead2 < v_target_lead:
-#         l1 = l2
-#         d_des, a_lead_p, v_target_lead, v_coast = d_des2, a_lead_p2, v_target_lead2, v_coast2
-
-#     # l1 is the main lead now
-
-#     #*** compute accel limits ***
-#     a_target1, a_pcm1 = calc_acc_accel_limits(l1.dRel, d_des, v_ego, v_pid, l1.vLead,
-#                                      l1.vRel, a_lead_p, v_target_lead, v_coast, a_target, a_pcm)
-
-#     # we can now limit a_target to a_lim
-#     a_target = np.clip(a_target1, a_lim[0], a_lim[1])
-#     a_pcm = np.clip(a_pcm1, a_lim[0], a_lim[1]).tolist()
-
-#     #*** compute max factor ***
-#     jerk_factor = calc_jerk_factor(l1.dRel, l1.vRel)
-
-#   # force coasting decel if driver hasn't been controlling car in a while
-#   return v_target_lead, a_target, a_pcm, jerk_factor
-
-
-
-
 def compute_speed_with_leads(v_ego, angle_steers, v_pid, l1, l2, CP):
   # drive limits
   # TODO: Make lims function of speed (more aggressive at low speed).
@@ -290,11 +229,72 @@ def compute_speed_with_leads(v_ego, angle_steers, v_pid, l1, l2, CP):
   #*** set target speed pretty high, as lead hasn't been considered yet
   v_target_lead = MAX_SPEED_POSSIBLE
 
+  #*** set accel limits as cruise accel/decel limits ***
+  a_target = calc_cruise_accel_limits(v_ego)
   # Always 1 for now.
   a_pcm = 1
 
+  #*** limit max accel in sharp turns
+  a_target, a_pcm = limit_accel_in_turns(v_ego, angle_steers, a_target, a_pcm, CP)
   jerk_factor = 0.
-  return v_target_lead, a_lim, a_pcm, jerk_factor
+
+  if l1 is not None and l1.status:
+    #*** process noisy a_lead signal from radar processing ***
+    a_lead_p = process_a_lead(l1.aLeadK)
+
+    #*** compute desired distance ***
+    d_des = calc_desired_distance(l1.vLead)
+
+    #*** compute desired speed ***
+    v_target_lead, v_coast = calc_desired_speed(l1.dRel, d_des, l1.vLead, a_lead_p)
+
+    if l2 is not None and l2.status:
+      #*** process noisy a_lead signal from radar processing ***
+      a_lead_p2 = process_a_lead(l2.aLeadK)
+
+      #*** compute desired distance ***
+      d_des2 = calc_desired_distance(l2.vLead)
+
+      #*** compute desired speed ***
+      v_target_lead2, v_coast2 = calc_desired_speed(l2.dRel, d_des2, l2.vLead, a_lead_p2)
+
+      # listen to lead that makes you go slower
+      if v_target_lead2 < v_target_lead:
+        l1 = l2
+        d_des, a_lead_p, v_target_lead, v_coast = d_des2, a_lead_p2, v_target_lead2, v_coast2
+
+    # l1 is the main lead now
+
+    #*** compute accel limits ***
+    a_target1, a_pcm1 = calc_acc_accel_limits(l1.dRel, d_des, v_ego, v_pid, l1.vLead,
+                                     l1.vRel, a_lead_p, v_target_lead, v_coast, a_target, a_pcm)
+
+    # we can now limit a_target to a_lim
+    a_target = np.clip(a_target1, a_lim[0], a_lim[1])
+    a_pcm = np.clip(a_pcm1, a_lim[0], a_lim[1]).tolist()
+
+    #*** compute max factor ***
+    jerk_factor = calc_jerk_factor(l1.dRel, l1.vRel)
+
+  # force coasting decel if driver hasn't been controlling car in a while
+  return v_target_lead, a_target, a_pcm, jerk_factor
+
+
+
+
+# def compute_speed_with_leads(v_ego, angle_steers, v_pid, l1, l2, CP):
+#   # drive limits
+#   # TODO: Make lims function of speed (more aggressive at low speed).
+#   a_lim = [-3., 1.5]
+
+#   #*** set target speed pretty high, as lead hasn't been considered yet
+#   v_target_lead = MAX_SPEED_POSSIBLE
+
+#   # Always 1 for now.
+#   a_pcm = 1
+
+#   jerk_factor = 0.
+#   return v_target_lead, a_lim, a_pcm, jerk_factor
 
 
 
