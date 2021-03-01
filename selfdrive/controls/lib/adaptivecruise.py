@@ -281,6 +281,8 @@ class AdaptiveCruise(object):
     self.last_cal = 0.
     self.l1, self.l2 = None, None
     self.dead = True
+    self.a_target = [-3.0, 1.5] # default
+    self.jerk_factor = 0.0
   def update(self, cur_time, v_ego, angle_steers, v_pid, CP, lead1, lead2):
     self.l1 = lead1
     self.l2 = lead2
@@ -291,9 +293,11 @@ class AdaptiveCruise(object):
     if cur_time - self.last_cal > 0.5:
       self.dead = True
 
-    self.v_target_lead, self.a_target, self.a_pcm, self.jerk_factor = \
-      compute_speed_with_leads(v_ego, angle_steers, v_pid, self.l1, self.l2, CP)
-    self.has_lead = self.v_target_lead != MAX_SPEED_POSSIBLE
+    # we comment out the following sentence to see whether the issue comes from the AC.update function
+
+    # self.v_target_lead, self.a_target, self.a_pcm, self.jerk_factor = \
+    #   compute_speed_with_leads(v_ego, angle_steers, v_pid, self.l1, self.l2, CP)
+    # self.has_lead = self.v_target_lead != MAX_SPEED_POSSIBLE
 
 
     ##66, self.aTarget is the result from the update function
