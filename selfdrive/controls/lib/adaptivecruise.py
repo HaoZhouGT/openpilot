@@ -297,3 +297,6 @@ class AdaptiveCruise(object):
     self.v_target_lead, self.a_target, self.a_pcm, self.jerk_factor = \
       compute_speed_with_leads(v_ego, angle_steers, v_pid, self.l1, self.l2, CP)
     self.has_lead = self.v_target_lead != MAX_SPEED_POSSIBLE
+
+
+    ### if we comment this function, the error won't occur
