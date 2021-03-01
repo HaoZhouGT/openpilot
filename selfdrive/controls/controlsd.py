@@ -23,6 +23,11 @@ from selfdrive.controls.lib.longitudinal_planner import LON_MPC_STEP
 from selfdrive.locationd.calibrationd import Calibration
 from selfdrive.hardware import HARDWARE, TICI
 
+
+from selfdrive.controls.lib.longcontrol_acc import ACCLongControl 
+#66, use a different Loc for ACC 
+
+
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
 LANE_DEPARTURE_THRESHOLD = 0.1
 STEER_ANGLE_SATURATION_TIMEOUT = 1.0 / DT_CTRL
@@ -100,6 +105,9 @@ class Controls:
     self.events = Events()
 
     self.LoC = LongControl(self.CP, self.CI.compute_gb)
+    self.ACCLoC = ACCLongControl() #66, this is the ACC LoC
+
+
     self.VM = VehicleModel(self.CP)
 
     if self.CP.lateralTuning.which() == 'pid':
@@ -378,6 +386,7 @@ class Controls:
     if not self.active:
       self.LaC.reset()
       self.LoC.reset(v_pid=CS.vEgo)
+      self.ACCLoC.reset(v_pid=CS.vEgo) #66, this is the ACC LoC
 
     long_plan_age = DT_CTRL * (self.sm.frame - self.sm.rcv_frame['longitudinalPlan'])
     # no greater than dt mpc + dt, to prevent too high extraps
@@ -388,6 +397,13 @@ class Controls:
 
     # Gas/Brake PID loop
     actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, long_plan.vTargetFuture, a_acc_sol, self.CP)
+
+    #### it's the controller for ACC #########################################################################
+    # *** gas/brake PID loop for ACC LoC *** 
+    actuators.gas, actuators.brake  = self.ACCLoC.update(self.enabled, self.CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
+                                        [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
+                                        long_plan.jerkFactorDEPRECATED, self.CP) 
+
     # Steering PID loop and lateral MPC
     actuators.steer, actuators.steeringAngleDeg, lac_log = self.LaC.update(self.active, CS, self.CP, lat_plan)
 
