@@ -163,7 +163,7 @@ class ACCLongControl(object):
     brake_max = interp(v_ego, brake_max_bp, brake_max_v)
 
     # TODO: not every time
-    if CP.enableGas:
+    if CP.enableGasInterceptor:
       gas_max_bp = [0., 100.]             # speeds
       gas_max_v = [0.6, 0.6]            # values
       gas_max = interp(v_ego, gas_max_bp, gas_max_v)
@@ -211,7 +211,7 @@ class ACCLongControl(object):
         self.v_pid = v_target
 
       # to avoid too much wind up on acceleration, limit positive speed error
-      if CP.enableGas:
+      if CP.enableGasInterceptor:
         max_speed_error = interp(v_ego, _MAX_SPEED_ERROR_BP, _MAX_SPEED_ERROR_V)
         self.v_pid = min(self.v_pid, v_ego + max_speed_error)
 
