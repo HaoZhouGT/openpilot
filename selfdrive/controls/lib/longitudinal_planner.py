@@ -14,6 +14,10 @@ from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
 
+
+#66, add a new ACC planner 
+from selfdrive.controls.lib.adaptivecruise import AdaptiveCruise
+
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2     # car smoothly decel at .2m/s^2 when user is distracted
 
@@ -62,6 +66,8 @@ class Planner():
 
     self.mpc1 = LongitudinalMpc(1)
     self.mpc2 = LongitudinalMpc(2)
+
+    self.AC = AdaptiveCruise()
 
     self.v_acc_start = 0.0
     self.a_acc_start = 0.0
@@ -121,6 +127,10 @@ class Planner():
 
     lead_1 = sm['radarState'].leadOne
     lead_2 = sm['radarState'].leadTwo
+
+    # add an update step for the ACC controller
+    make sure all arguments can be accessed correctly 
+    self.AC.update(cur_time, v_ego, sm['carState'].steeringAngle, v_ego, CP, lead_1, lead_2)
 
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
     following = lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
@@ -214,9 +224,9 @@ class Planner():
 
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.rcv_time['radarState']
 
-
     ### try deprecated messages
-    longitudinalPlan.aTargetMinDEPRECATED = float(self.a_acc)
-    longitudinalPlan.aTargetMaxDEPRECATED = float(self.a_acc)
+    longitudinalPlan.aTargetMinDEPRECATED = float(self.AC.a_target[0])
+    longitudinalPlan.aTargetMaxDEPRECATED = float(self.AC.a_target[1])
+    longitudinalPlan.jerkFactorDEPRECATED = float(self.AC.jerk_factor)
 
     pm.send('longitudinalPlan', plan_send)
