@@ -3,7 +3,7 @@
 Openpilot's fork by Hao Zhou
 ---
 
-This is a fork of openpilot by Hao Zhou. The modifications are mostly focusing on the longitudinal control of vehicles. 
+This is a fork of openpilot by Hao Zhou, a Transportation PhD student at Georgia Tech. The modifications are mostly focusing on the longitudinal control of vehicles. 
 
 What is openpilot?
 ------
