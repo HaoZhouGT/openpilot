@@ -237,3 +237,6 @@ class ACCLongControl(object):
     final_brake = -clip(output_gb, -brake_max, 0.)
     return final_gas, final_brake
 
+  def dummy_update(self, enabled, v_ego, v_cruise, v_target_lead, a_target, jerk_factor, CP):
+    # this is a dummy update function to test self.ACCLoC.udpate
+    return 0.0, 0.0

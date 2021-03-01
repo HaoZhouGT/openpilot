@@ -400,7 +400,7 @@ class Controls:
 
     #### it's the controller for ACC #########################################################################
     # *** gas/brake PID loop for ACC LoC *** 
-    actuators.gas, actuators.brake = self.ACCLoC.update(self.enabled, self.CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
+    ACCgas, ACCbrake = self.ACCLoC.dummy_update(self.enabled, self.CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
                                         [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
                                         long_plan.jerkFactorDEPRECATED, self.CP) 
 
