@@ -397,12 +397,13 @@ class Controls:
 
     # Gas/Brake PID loop
     # actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, long_plan.vTargetFuture, a_acc_sol, self.CP)
-
+    actuators.gas = 0.0
+    actuators.brake = 0.0
     #### it's the controller for ACC #########################################################################
 
-    actuators.gas, actuators.brake = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
-                                        [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
-                                        long_plan.jerkFactorDEPRECATED, self.CP) 
+    # actuators.gas, actuators.brake = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
+    #                                     [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
+    #                                     long_plan.jerkFactorDEPRECATED, self.CP) 
 
 
     # Steering PID loop and lateral MPC
