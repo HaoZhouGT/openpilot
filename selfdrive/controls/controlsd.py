@@ -404,7 +404,7 @@ class Controls:
     #                                     [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
     #                                     long_plan.jerkFactorDEPRECATED, self.CP) 
 
-    actuators.gas, actuators.brake = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
+    acc_gas, acc_brake = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
                                         [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
                                         long_plan.jerkFactorDEPRECATED, self.CP) 
 
