@@ -431,9 +431,10 @@ class Controls:
         self.events.add(EventName.steerSaturated)
 
     ACC_vTarget = long_plan.vTarget
-    return actuators, ACC_vTarget, a_acc_sol, lac_log
+    vMPC = v_acc_sol
+    return actuators, ACC_vTarget, vMPC, a_acc_sol, lac_log
 
-  def publish_logs(self, CS, start_time, actuators, v_acc, a_acc, lac_log):
+  def publish_logs(self, CS, start_time, actuators, v_ACC, v_MPC, a_acc, lac_log):
     """Send actuators and hud commands to the car, send controlsstate and MPC logging"""
 
     CC = car.CarControl.new_message()
@@ -521,7 +522,12 @@ class Controls:
     controlsState.uiAccelCmd = float(self.LoC.pid.i)
     controlsState.ufAccelCmd = float(self.LoC.pid.f)
     controlsState.steeringAngleDesiredDeg = float(self.LaC.angle_steers_des)
-    controlsState.vTargetLead = float(v_acc)
+    controlsState.vTargetLead = float(v_ACC)
+    controlsState.vACC = float(v_ACC)
+    controlsState.vMPC = float(v_MPC) # try to add vTarget solution from mpc
+
+
+
     controlsState.aTarget = float(a_acc)
     controlsState.cumLagMs = -self.rk.remaining * 1000.
     controlsState.startMonoTime = int(start_time * 1e9)
@@ -587,7 +593,7 @@ class Controls:
     self.prof.checkpoint("State Control")
 
     # Publish data
-    self.publish_logs(CS, start_time, actuators, ACC_vTarget, a_acc, lac_log)
+    self.publish_logs(CS, start_time, actuators, ACC_vTarget, vMPC, a_acc, lac_log)
     self.prof.checkpoint("Sent")
 
   def controlsd_thread(self):
