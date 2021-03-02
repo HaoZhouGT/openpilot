@@ -430,7 +430,8 @@ class Controls:
       if left_deviation or right_deviation:
         self.events.add(EventName.steerSaturated)
 
-    return actuators, v_acc_sol, a_acc_sol, lac_log
+    ACC_vTarget = long_plan.vTarget
+    return actuators, ACC_vTarget, a_acc_sol, lac_log
 
   def publish_logs(self, CS, start_time, actuators, v_acc, a_acc, lac_log):
     """Send actuators and hud commands to the car, send controlsstate and MPC logging"""
@@ -512,7 +513,9 @@ class Controls:
     controlsState.state = self.state
     controlsState.engageable = not self.events.any(ET.NO_ENTRY)
     controlsState.longControlState = self.LoC.long_control_state
-    controlsState.vPid = float(self.LoC.v_pid)
+    # controlsState.vPid = float(self.LoC.v_pid)
+    controlsState.vPid = float(self.ACCLoC.v_pid) #66, add ACCLoC's v_pid to controlsState
+
     controlsState.vCruise = float(self.v_cruise_kph)
     controlsState.upAccelCmd = float(self.LoC.pid.p)
     controlsState.uiAccelCmd = float(self.LoC.pid.i)
@@ -579,12 +582,12 @@ class Controls:
       self.prof.checkpoint("State transition")
 
     # Compute actuators (runs PID loops and lateral MPC)
-    actuators, v_acc, a_acc, lac_log = self.state_control(CS)
+    actuators, ACC_vTarget, a_acc, lac_log = self.state_control(CS)
 
     self.prof.checkpoint("State Control")
 
     # Publish data
-    self.publish_logs(CS, start_time, actuators, v_acc, a_acc, lac_log)
+    self.publish_logs(CS, start_time, actuators, ACC_vTarget, a_acc, lac_log)
     self.prof.checkpoint("Sent")
 
   def controlsd_thread(self):
