@@ -503,7 +503,6 @@ struct ControlsState @0x97ff69c53601abf1 {
   steeringAngleDesiredDeg @29 :Float32;
   curvature @37 :Float32;  # path curvature from vehicle model
   forceDecel @51 :Bool;
-  vMPC @ 6: Float32; # add a new variable to record mpc speed
 
   # UI alerts
   alertText1 @24 :Text;
