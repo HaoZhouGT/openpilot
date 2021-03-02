@@ -503,8 +503,7 @@ struct ControlsState @0x97ff69c53601abf1 {
   steeringAngleDesiredDeg @29 :Float32;
   curvature @37 :Float32;  # path curvature from vehicle model
   forceDecel @51 :Bool;
-  vMPC @ 0:Float32;
-  vACC @ 1:Float32:
+  vMPC @ 6: Float32; # add a new variable to record mpc speed
 
   # UI alerts
   alertText1 @24 :Text;
@@ -588,9 +587,9 @@ struct ControlsState @0x97ff69c53601abf1 {
   }
 
   # deprecated
-  #vEgoDEPRECATED @0 :Float32; 3 commented, save for vMPC
+  vEgoDEPRECATED @0 :Float32;
   vEgoRawDEPRECATED @32 :Float32;
-  #aEgoDEPRECATED @1 :Float32;
+  aEgoDEPRECATED @1 :Float32;
   canMonoTimeDEPRECATED @16 :UInt64;
   radarStateMonoTimeDEPRECATED @17 :UInt64;
   mdMonoTimeDEPRECATED @18 :UInt64;
