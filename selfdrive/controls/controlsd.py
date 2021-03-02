@@ -397,14 +397,16 @@ class Controls:
 
     # Gas/Brake PID loop
     actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, long_plan.vTargetFuture, a_acc_sol, self.CP)
-    actuators.gas = float(0.1)
-    actuators.brake = float(0.1)
+    # actuators.gas = float(0.1)
+    # actuators.brake = float(0.1) # let use ACCLoC to replace them
     #### it's the controller for ACC #########################################################################
 
-    # actuators.gas, actuators.brake = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
-    #                                     [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
-    #                                     long_plan.jerkFactorDEPRECATED, self.CP) 
-
+    acc_gas, acc_brake = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
+                                        [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
+                                        long_plan.jerkFactorDEPRECATED, self.CP) 
+    actuators.gas = float(acc_gas) #66, make sure it is float
+    actuators.brake = float(acc_brake)
+    #66, let's make sure acc_gas and acc_brake are float numbers
 
     # Steering PID loop and lateral MPC
     actuators.steer, actuators.steeringAngleDeg, lac_log = self.LaC.update(self.active, CS, self.CP, lat_plan)
