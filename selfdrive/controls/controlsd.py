@@ -12,7 +12,7 @@ from selfdrive.boardd.boardd import can_list_to_can_capnp
 from selfdrive.car.car_helpers import get_car, get_startup_event, get_one_can
 from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET
 from selfdrive.controls.lib.drive_helpers import update_v_cruise, initialize_v_cruise
-from selfdrive.controls.lib.longcontrol import STARTING_TARGET_SPEED #LongControl #66, comment out the LoC for MPC
+from selfdrive.controls.lib.longcontrol import STARTING_TARGET_SPEED, LongControl #66, comment out the LoC for MPC
 from selfdrive.controls.lib.latcontrol_pid import LatControlPID
 from selfdrive.controls.lib.latcontrol_indi import LatControlINDI
 from selfdrive.controls.lib.latcontrol_lqr import LatControlLQR
@@ -104,7 +104,7 @@ class Controls:
     self.AM = AlertManager()
     self.events = Events()
 
-    # self.LoC = LongControl(self.CP, self.CI.compute_gb) # comment the LoC for MPC
+    self.LoC = LongControl(self.CP, self.CI.compute_gb) # comment the LoC for MPC
     self.ACCLoC = ACCLongControl() #66, this is the ACC LoC
 
 
@@ -385,7 +385,7 @@ class Controls:
 
     if not self.active:
       self.LaC.reset()
-      # self.LoC.reset(v_pid=CS.vEgo)
+      self.LoC.reset(v_pid=CS.vEgo) #66, reset the LoC for MPC
       self.ACCLoC.reset(v_pid=CS.vEgo) #66, this is the ACC LoC
 
     long_plan_age = DT_CTRL * (self.sm.frame - self.sm.rcv_frame['longitudinalPlan'])
@@ -396,9 +396,9 @@ class Controls:
     v_acc_sol = long_plan.vStart + dt * (a_acc_sol + long_plan.aStart) / 2.0
 
     # Gas/Brake PID loop
-    # actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, long_plan.vTargetFuture, a_acc_sol, self.CP)
-    actuators.gas = 0.0
-    actuators.brake = 0.0
+    actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, long_plan.vTargetFuture, a_acc_sol, self.CP)
+    actuators.gas = float(0.1)
+    actuators.brake = float(0.1)
     #### it's the controller for ACC #########################################################################
 
     # actuators.gas, actuators.brake = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
