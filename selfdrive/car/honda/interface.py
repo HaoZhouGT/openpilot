@@ -171,6 +171,7 @@ class CarInterface(CarInterfaceBase):
     if candidate == CAR.CIVIC:
       stop_and_go = True
       ret.mass = CivicParams.MASS
+      ret.safetyParam |= ALT_BRAKE_FLAG
       ret.wheelbase = CivicParams.WHEELBASE
       ret.centerToFront = CivicParams.CENTER_TO_FRONT
       ret.steerRatio = 15.38  # 10.93 is end-to-end spec
