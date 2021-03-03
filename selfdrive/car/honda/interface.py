@@ -196,6 +196,7 @@ class CarInterface(CarInterfaceBase):
     elif candidate in (CAR.CIVIC_BOSCH, CAR.CIVIC_BOSCH_DIESEL):
       stop_and_go = True
       ret.mass = CivicParams.MASS
+      ret.safetyParam |= ALT_BRAKE_FLAG ## 66, add this according to Joe
       ret.wheelbase = CivicParams.WHEELBASE
       ret.centerToFront = CivicParams.CENTER_TO_FRONT
       ret.steerRatio = 15.38  # 10.93 is end-to-end spec
