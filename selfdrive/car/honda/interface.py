@@ -2,6 +2,7 @@
 import numpy as np
 from cereal import car
 from common.numpy_fast import clip, interp
+from common.params import Params
 from common.realtime import DT_CTRL
 from selfdrive.swaglog import cloudlog
 from selfdrive.config import Conversions as CV
@@ -17,7 +18,13 @@ ButtonType = car.CarState.ButtonEvent.Type
 EventName = car.CarEvent.EventName
 
 
-def compute_gb_honda(accel, speed):
+ALT_BRAKE_FLAG = 1
+BOSCH_LONG_FLAG = 2
+
+def compute_gb_honda_bosch(accel, speed):
+  return float(accel) / 4.8
+
+def compute_gb_honda_nidec(accel, speed):
   creep_brake = 0.0
   creep_speed = 2.3
   creep_brake_value = 0.15
@@ -80,8 +87,10 @@ class CarInterface(CarInterfaceBase):
 
     if self.CS.CP.carFingerprint == CAR.ACURA_ILX:
       self.compute_gb = get_compute_gb_acura()
+    elif self.CS.CP.carFingerprint in HONDA_BOSCH:
+      self.compute_gb = compute_gb_honda_bosch
     else:
-      self.compute_gb = compute_gb_honda
+      self.compute_gb = compute_gb_honda_nidec
 
   @staticmethod
   def compute_gb(accel, speed): # pylint: disable=method-hidden
@@ -121,25 +130,30 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), car_fw=[]):  # pylint: disable=dangerous-default-value
+    params = Params()
     ret = CarInterfaceBase.get_std_params(candidate, fingerprint)
     ret.carName = "honda"
+    ret.safetyParam = 0
 
     if candidate in HONDA_BOSCH:
       ret.safetyModel = car.CarParams.SafetyModel.hondaBoschHarness
       ret.enableCamera = True
       ret.radarOffCan = True
-      ret.openpilotLongitudinalControl = False
+      ret.openpilotLongitudinalControl = True
+      ret.enableCruise = not ret.openpilotLongitudinalControl
+      ret.communityFeature = ret.openpilotLongitudinalControl
+      if ret.openpilotLongitudinalControl:
+        ret.safetyParam |= BOSCH_LONG_FLAG
     else:
       ret.safetyModel = car.CarParams.SafetyModel.hondaNidec
       ret.enableCamera = True
       ret.enableGasInterceptor = 0x201 in fingerprint[0]
       ret.openpilotLongitudinalControl = ret.enableCamera
+      ret.enableCruise = not ret.enableGasInterceptor
+      ret.communityFeature = ret.enableGasInterceptor
 
     cloudlog.warning("ECU Camera Simulated: %r", ret.enableCamera)
     cloudlog.warning("ECU Gas Interceptor: %r", ret.enableGasInterceptor)
-
-    ret.enableCruise = not ret.enableGasInterceptor
-    ret.communityFeature = ret.enableGasInterceptor
 
     # Certain Hondas have an extra steering sensor at the bottom of the steering rack,
     # which improves controls quality as it removes the steering column torsion from feedback.
@@ -196,7 +210,7 @@ class CarInterface(CarInterfaceBase):
     elif candidate in (CAR.ACCORD, CAR.ACCORD_15, CAR.ACCORDH):
       stop_and_go = True
       if not candidate == CAR.ACCORDH:  # Hybrid uses same brake msg as hatch
-        ret.safetyParam = 1  # Accord(ICE), CRV 5G, and RDX 3G use an alternate user brake msg
+        ret.safetyParam |= ALT_BRAKE_FLAG  # Accord(ICE), CRV 5G, and RDX 3G use an alternate user brake msg
       ret.mass = 3279. * CV.LB_TO_KG + STD_CARGO_KG
       ret.wheelbase = 2.83
       ret.centerToFront = ret.wheelbase * 0.39
@@ -243,7 +257,7 @@ class CarInterface(CarInterfaceBase):
 
     elif candidate == CAR.CRV_5G:
       stop_and_go = True
-      ret.safetyParam = 1  # Accord(ICE), CRV 5G, and RDX 3G use an alternate user brake msg
+      ret.safetyParam |= ALT_BRAKE_FLAG  # Accord(ICE), CRV 5G, and RDX 3G use an alternate user brake msg
       ret.mass = 3410. * CV.LB_TO_KG + STD_CARGO_KG
       ret.wheelbase = 2.66
       ret.centerToFront = ret.wheelbase * 0.41
@@ -265,7 +279,7 @@ class CarInterface(CarInterfaceBase):
 
     elif candidate == CAR.CRV_HYBRID:
       stop_and_go = True
-      ret.safetyParam = 1  # Accord(ICE), CRV 5G, and RDX 3G use an alternate user brake msg
+      ret.safetyParam |= ALT_BRAKE_FLAG  # Accord(ICE), CRV 5G, and RDX 3G use an alternate user brake msg
       ret.mass = 1667. + STD_CARGO_KG  # mean of 4 models in kg
       ret.wheelbase = 2.66
       ret.centerToFront = ret.wheelbase * 0.41
@@ -422,10 +436,16 @@ class CarInterface(CarInterfaceBase):
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
                                                                          tire_stiffness_factor=tire_stiffness_factor)
 
-    ret.gasMaxBP = [0.]  # m/s
-    ret.gasMaxV = [0.6] if ret.enableGasInterceptor else [0.]  # max gas allowed
-    ret.brakeMaxBP = [5., 20.]  # m/s
-    ret.brakeMaxV = [1., 0.8]   # max brake allowed
+    if candidate in HONDA_BOSCH:
+      ret.gasMaxBP = [0.0, 5., 10., 22., 35.] # m/s #0, 11, 22, 49, 78 mph
+      ret.gasMaxV = [0.35, 0.25, 0.20, 0.17, 0.15] #lessen gasMax as speed increases
+      ret.brakeMaxBP = [0.]  # m/s
+      ret.brakeMaxV = [1.]   # max brake allowed
+    else:
+      ret.gasMaxBP = [0.]  # m/s
+      ret.gasMaxV = [0.6] if ret.enableGasInterceptor else [0.]  # max gas allowed
+      ret.brakeMaxBP = [5., 20.]  # m/s
+      ret.brakeMaxV = [1., 0.8]   # max brake allowed
 
     ret.stoppingControl = True
     ret.startAccel = 0.5
