@@ -162,13 +162,18 @@ class ACCLongControl(object):
     # brake and gas limits
     brake_max = interp(v_ego, brake_max_bp, brake_max_v)
 
-    # TODO: not every time
-    if CP.enableGasInterceptor:
-      gas_max_bp = [0., 100.]             # speeds
-      gas_max_v = [0.6, 0.6]            # values
-      gas_max = interp(v_ego, gas_max_bp, gas_max_v)
-    else:
-      gas_max = 0
+
+    gas_max_bp = [0., 100.]             # speeds
+    gas_max_v = [0.6, 0.6]            # values
+    gas_max = interp(v_ego, gas_max_bp, gas_max_v)
+
+    # # TODO: not every time
+    # if CP.enableGasInterceptor:
+    #   gas_max_bp = [0., 100.]             # speeds
+    #   gas_max_v = [0.6, 0.6]            # values
+    #   gas_max = interp(v_ego, gas_max_bp, gas_max_v)
+    # else:
+    #   gas_max = 0
 
     overshoot_allowance = 2.0    # overshoot allowed when changing accel sign
 
