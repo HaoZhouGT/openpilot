@@ -41,7 +41,7 @@ def long_control_state_trans(enabled, long_control_state, v_ego, v_target, v_pid
 
 
 def honda_compute_gb():# divide the dunmmy accel by 3
-  w0 = np.array([[ 0.0],  [1/4.0]],dtype=np.float32)
+  w0 = np.array([[ 0.0],  [1/3.0]],dtype=np.float32)
   def _compute_gb(dat):
     dat = [dat[1],dat[0]] # this is to correct the order 
     gb = np.dot(dat, w0) 
@@ -96,7 +96,7 @@ compute_gb = honda_compute_gb()
 
 
 _KP_BP = [0., 5., 35.]
-_KP_V =  [1.2, 0.8, 0.5]
+_KP_V =  1.0*np.array([1.2, 0.8, 0.5])
 
 _kI_BP = [0., 35.]
 _kI_V =  [0.18, 0.12]

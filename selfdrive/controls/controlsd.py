@@ -501,6 +501,9 @@ class Controls:
     dat = messaging.new_message('controlsState')
     dat.valid = CS.canValid
     controlsState = dat.controlsState
+    controlsState.gas = actuators.gas
+    controlsState.brake = actuators.brake
+
     controlsState.alertText1 = self.AM.alert_text_1
     controlsState.alertText2 = self.AM.alert_text_2
     controlsState.alertSize = self.AM.alert_size
