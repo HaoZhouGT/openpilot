@@ -501,8 +501,8 @@ class Controls:
     dat = messaging.new_message('controlsState')
     dat.valid = CS.canValid
     controlsState = dat.controlsState
-    controlsState.decelForTurnDEPRECATED = actuators.gas # 66, assign gas to deprecated msg
-    controlsState.gpsPlannerActiveDEPRECATED = actuators.brake
+    controlsState.gas = actuators.gas # 66, assign gas to deprecated msg
+    controlsState.brake = actuators.brake
 
     controlsState.alertText1 = self.AM.alert_text_1
     controlsState.alertText2 = self.AM.alert_text_2
