@@ -163,7 +163,7 @@ class Planner():
     self.mpc2.set_cur_state(self.v_acc_start, self.a_acc_start)
 
     self.mpc1.update(sm['carState'], lead_1)
-    self.mpc2.update(sm['carState'], lead_2)
+    self.mpc2.update(sm['carState'], lead_2) # 66, for cut-in
 
     self.choose_solution(v_cruise_setpoint, enabled)
 
