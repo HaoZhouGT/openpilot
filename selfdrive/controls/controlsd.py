@@ -386,8 +386,7 @@ class Controls:
     # no greater than dt mpc + dt, to prevent too high extraps
     dt = min(long_plan_age, LON_MPC_STEP + DT_CTRL) + DT_CTRL
 
-    ##66 is there anyway to see what is dt?
-
+    ##66 is there anyway to see what is dt? yes, dt is mostly 0.01s, sometimes 0.02s
     a_acc_sol = long_plan.aStart + (dt / LON_MPC_STEP) * (long_plan.aTarget - long_plan.aStart)
     v_acc_sol = long_plan.vStart + dt * (a_acc_sol + long_plan.aStart) / 2.0
 

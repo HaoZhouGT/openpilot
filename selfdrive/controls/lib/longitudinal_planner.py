@@ -111,6 +111,7 @@ class Planner():
     """Gets called when new radarState is available"""
     cur_time = sec_since_boot()
     v_ego = sm['carState'].vEgo
+    a_ego = sm['carState'].aEgo
 
     long_control_state = sm['controlsState'].longControlState
     v_cruise_kph = sm['controlsState'].vCruise
@@ -125,8 +126,11 @@ class Planner():
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
     following = lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
 
-    self.v_acc_start = self.v_acc_next
-    self.a_acc_start = self.a_acc_next
+    # self.v_acc_start = self.v_acc_next
+    # self.a_acc_start = self.a_acc_next
+
+    self.v_acc_start = v_ego
+    self.a_acc_start = a_ego
 
     # Calculate speed for normal cruise control
     if enabled and not self.first_loop and not sm['carState'].gasPressed:
