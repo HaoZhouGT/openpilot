@@ -96,10 +96,10 @@ compute_gb = honda_compute_gb()
 
 
 _KP_BP = [0., 5., 35.]
-_KP_V =  [3.6, 2.4, 1.5]
+_KP_V =  [1.8, 1.2, 0.8]
 
 _kI_BP = [0., 35.]
-_kI_V =  [0.54, 0.36]
+_kI_V =  [0.27, 0.18]
 
 
       # ret.longitudinalTuning.kpBP = [0., 5., 35.]
