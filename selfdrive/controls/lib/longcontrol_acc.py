@@ -96,10 +96,16 @@ compute_gb = honda_compute_gb()
 
 
 _KP_BP = [0., 5., 35.]
-_KP_V =  1.0*np.array([1.2, 0.8, 0.5])
+_KP_V =  [3.6, 2.4, 1.5]
 
 _kI_BP = [0., 35.]
-_kI_V =  [0.18, 0.12]
+_kI_V =  [0.54, 0.36]
+
+
+      # ret.longitudinalTuning.kpBP = [0., 5., 35.]
+      # ret.longitudinalTuning.kpV = [3.6, 2.4, 1.5] #[1.2, 0.8, 0.5] # 66, why the default is so small?
+      # ret.longitudinalTuning.kiBP = [0., 35.]
+      # ret.longitudinalTuning.kiV = [0.54, 0.36]# [0.18, 0.12]
 
 def pid_long_control(v_ego, v_pid, Ui_accel_cmd, gas_max, brake_max, jerk_factor, gear, rate):
   #*** This function compute the gb pedal positions in order to track the desired speed
