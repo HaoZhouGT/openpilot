@@ -403,8 +403,9 @@ class Controls:
     # actuators.gas = float(0.1)
     # actuators.brake = float(0.1) # let use ACCLoC to replace them
     #### it's the controller for ACC #########################################################################
-
-    acc_gas, acc_brake = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget, 
+    aTargetACC = (long_plan.vTarget-CS.vEgo)/self.CP.radarTimeStep
+    aTargetACC = float(aTargetACC)
+    acc_gas, acc_brake = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget, aTargetACC, 
                                         [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
                                         long_plan.jerkFactorDEPRECATED, self.CP) 
     actuators.gas = float(acc_gas) #66, make sure it is float

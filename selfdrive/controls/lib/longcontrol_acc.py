@@ -40,8 +40,8 @@ def long_control_state_trans(enabled, long_control_state, v_ego, v_target, v_pid
   return long_control_state
 
 
-def honda_compute_gb():# divide the dunmmy accel by 3
-  w0 = np.array([[ 0.0],  [1/3.0]],dtype=np.float32)
+def honda_compute_gb():# divide the dunmmy accel by 4
+  w0 = np.array([[ 0.0],  [1/4.0]],dtype=np.float32)
   def _compute_gb(dat):
     dat = [dat[1],dat[0]] # this is to correct the order 
     gb = np.dot(dat, w0) 
@@ -96,10 +96,10 @@ compute_gb = honda_compute_gb()
 
 
 _KP_BP = [0., 5., 35.]
-_KP_V =  [1.8, 1.2, 0.8]
+_KP_V =  [1.2, 0.8, 0.5]
 
 _kI_BP = [0., 35.]
-_kI_V =  [0.27, 0.18]
+_kI_V =  [0.18, 0.12] #revert to smaller P and I, due to the additional F gain
 
 
       # ret.longitudinalTuning.kpBP = [0., 5., 35.]
@@ -107,7 +107,7 @@ _kI_V =  [0.27, 0.18]
       # ret.longitudinalTuning.kiBP = [0., 35.]
       # ret.longitudinalTuning.kiV = [0.54, 0.36]# [0.18, 0.12]
 
-def pid_long_control(v_ego, v_pid, Ui_accel_cmd, gas_max, brake_max, jerk_factor, gear, rate):
+def pid_long_control(v_ego, v_pid, aTarget, Ui_accel_cmd, gas_max, brake_max, jerk_factor, gear, rate):
   #*** This function compute the gb pedal positions in order to track the desired speed
   # proportional and integral terms. More precision at low speed
   Kp = interp(v_ego, _KP_BP, _KP_V)
@@ -136,7 +136,7 @@ def pid_long_control(v_ego, v_pid, Ui_accel_cmd, gas_max, brake_max, jerk_factor
     #update integrator
     Ui_accel_cmd = Ui_accel_cmd_new
 
-  accel_cmd = Ui_accel_cmd + Up_accel_cmd
+  accel_cmd = Ui_accel_cmd + Up_accel_cmd + 1.0 * aTarget #66, feed forward term with Kf = 1.0
 
   # go from accel to pedals
   output_gb = compute_gb([accel_cmd, v_ego])
@@ -172,7 +172,7 @@ class ACCLongControl(object):
     self.Ui_accel_cmd = 0.
     self.v_pid = v_pid
 
-  def update(self, enabled, v_ego, v_cruise, v_target_lead, a_target, jerk_factor, CP):
+  def update(self, enabled, v_ego, v_cruise, v_target_lead, aTarget, a_target_limit, jerk_factor, CP):
     brake_max_bp = [0., 5., 20., 100.]  # speeds     
     brake_max_v = [1.0, 1.0, 0.8, 0.8]  # values
 
@@ -201,8 +201,8 @@ class ACCLongControl(object):
     v_cruise_mph = round(v_cruise * CV.KPH_TO_MPH)   # what's displayed in mph on the IC
     v_target = min(v_target_lead, v_cruise_mph * CV.MPH_TO_MS)
 
-    max_speed_delta_up = a_target[1]*1.0/rate
-    max_speed_delta_down = a_target[0]*1.0/rate
+    max_speed_delta_up = a_target_limit[1]*1.0/rate
+    max_speed_delta_down = a_target_limit[0]*1.0/rate
 
     # *** long control substate transitions
     self.long_control_state = long_control_state_trans(enabled, self.long_control_state, v_ego, v_target, self.v_pid, output_gb)
@@ -239,7 +239,7 @@ class ACCLongControl(object):
 
       # TODO: removed anti windup on gear change, does it matter?
       output_gb, self.Up_accel_cmd, self.Ui_accel_cmd, self.long_control_sat = pid_long_control(v_ego, self.v_pid, \
-                                  self.Ui_accel_cmd, gas_max, brake_max, jerk_factor, 0, rate)
+                                  aTarget, self.Ui_accel_cmd, gas_max, brake_max, jerk_factor, 0, rate)
     # intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
       if v_ego > 0. or output_gb > -brake_stopping_target:
