@@ -92,14 +92,14 @@ def get_compute_gb():
   return _compute_gb
 
 # takes in [desired_accel, current_speed] -> [-1.0, 1.0] where -1.0 is max brake and 1.0 is max gas
-compute_gb = honda_compute_gb()
+compute_gb = get_compute_gb()
 
 
 _KP_BP = [0., 5., 35.]
-_KP_V =  [1.2, 0.8, 0.5]
+_KP_V =  [2.0, 1.6, 0.8]
 
 _kI_BP = [0., 35.]
-_kI_V =  [0.18, 0.12] #revert to smaller P and I, due to the additional F gain
+_kI_V =  [0.24, 0.12] #revert to smaller P and I, due to the additional F gain
 
 
       # ret.longitudinalTuning.kpBP = [0., 5., 35.]
