@@ -40,8 +40,8 @@ def long_control_state_trans(enabled, long_control_state, v_ego, v_target, v_pid
   return long_control_state
 
 
-def honda_compute_gb():# divide the dunmmy accel by 3
-  w0 = np.array([[ 0.0],  [1/3.0]],dtype=np.float32)
+def honda_compute_gb():# divide the dunmmy accel by 4
+  w0 = np.array([[ 0.0],  [1/4.0]],dtype=np.float32)
   def _compute_gb(dat):
     dat = [dat[1],dat[0]] # this is to correct the order 
     gb = np.dot(dat, w0) 
@@ -92,14 +92,21 @@ def get_compute_gb():
   return _compute_gb
 
 # takes in [desired_accel, current_speed] -> [-1.0, 1.0] where -1.0 is max brake and 1.0 is max gas
-compute_gb = honda_compute_gb()
+compute_gb = get_compute_gb()
 
 
 _KP_BP = [0., 5., 35.]
+<<<<<<< HEAD
 _KP_V =  [2.4, 1.6, 1.0]
 
 _kI_BP = [0., 35.]
 _kI_V =  [0.18, 0.12]
+=======
+_KP_V =  [2.0, 1.6, 0.8]
+
+_kI_BP = [0., 35.]
+_kI_V =  [0.24, 0.12] #revert to smaller P and I, due to the additional F gain
+>>>>>>> 200164956cc56afc6c5b5edd22afc4710987817c
 
 
       # ret.longitudinalTuning.kpBP = [0., 5., 35.]
@@ -172,7 +179,7 @@ class ACCLongControl(object):
     self.Ui_accel_cmd = 0.
     self.v_pid = v_pid
 
-  def update(self, enabled, v_ego, v_cruise, v_target_lead, a_target, jerk_factor, CP):
+  def update(self, enabled, v_ego, v_cruise, v_target_lead, a_target_limit, jerk_factor, CP):
     brake_max_bp = [0., 5., 20., 100.]  # speeds     
     brake_max_v = [1.0, 1.0, 0.8, 0.8]  # values
 
@@ -201,11 +208,12 @@ class ACCLongControl(object):
     v_cruise_mph = round(v_cruise * CV.KPH_TO_MPH)   # what's displayed in mph on the IC
     v_target = min(v_target_lead, v_cruise_mph * CV.MPH_TO_MS)
 
-    max_speed_delta_up = a_target[1]*1.0/rate
-    max_speed_delta_down = a_target[0]*1.0/rate
+    max_speed_delta_up = a_target_limit[1]*1.0/rate
+    max_speed_delta_down = a_target_limit[0]*1.0/rate
 
     # *** long control substate transitions
-    self.long_control_state = long_control_state_trans(enabled, self.long_control_state, v_ego, v_target, self.v_pid, output_gb)
+    self.long_control_state = long_control_state_trans(enabled, self.long_control_state, v_ego, v_target, \
+      self.v_pid, output_gb)
 
     # *** long control behavior based on state
     # TODO: move this to drive_helpers
@@ -238,8 +246,8 @@ class ACCLongControl(object):
         self.v_pid = min(self.v_pid, v_ego + max_speed_error)
 
       # TODO: removed anti windup on gear change, does it matter?
-      output_gb, self.Up_accel_cmd, self.Ui_accel_cmd, self.long_control_sat = pid_long_control(v_ego, self.v_pid, \
-                                  self.Ui_accel_cmd, gas_max, brake_max, jerk_factor, 0, rate)
+      output_gb, self.Up_accel_cmd, self.Ui_accel_cmd, self.long_control_sat = pid_long_control(v_ego, \
+        self.v_pid, self.Ui_accel_cmd, gas_max, brake_max, jerk_factor, 0, rate)
     # intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
       if v_ego > 0. or output_gb > -brake_stopping_target:
