@@ -41,7 +41,7 @@ def long_control_state_trans(enabled, long_control_state, v_ego, v_target, v_pid
 
 
 def honda_compute_gb():# divide the dunmmy accel by 4
-  w0 = np.array([[ 0.0],  [1/4.0]],dtype=np.float32)
+  w0 = np.array([[ 0.0],  [1/3.5]],dtype=np.float32)
   def _compute_gb(dat):
     dat = [dat[1],dat[0]] # this is to correct the order 
     gb = np.dot(dat, w0) 
@@ -92,11 +92,39 @@ def get_compute_gb():
   return _compute_gb
 
 # takes in [desired_accel, current_speed] -> [-1.0, 1.0] where -1.0 is max brake and 1.0 is max gas
-compute_gb = get_compute_gb()
+compute_gb = honda_compute_gb()
+
+
+
+def Equil(v):
+    Speed = [0., 2.83, 5.11, 8.29, 13.64, 19.20, 25.0, 32.0, 41.72, 43.6]
+    Gas =[0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    return interp(v, Speed, Gas) 
+
+def Vanilla_gb_model(ls):
+    Equilv_gain = 0.975 #maybe need to interpolate # 0.975 is good for 20-->25 m/s 
+    Accel_gain = 0.6 # we can adjust this gain to get strong or weak gas
+    Brake_gain = 8.0
+    v = ls[1]
+    aDesire = ls[0]
+    if isinstance(v, (list, tuple, np.ndarray)):
+      v = v[0] 
+    if isinstance(aDesire, (list, tuple, np.ndarray)):
+      aDesire = aDesire[0] 
+
+    if aDesire>0:
+        gas = Equilv_gain*Equil(v) + Accel_gain*aDesire/1.0*(1.0-Equil(v)) 
+    if aDesire<0:
+        gas = Equilv_gain*Equil(v) + Brake_gain*aDesire/4.0*(Equil(v)+1.0)
+    gas = clip(gas, -1, 1)
+    return gas
+
 
 
 _KP_BP = [0., 5., 35.]
-_KP_V =  [2.4, 1.6, 1.0]
+# _KP_V =  [2.4, 1.6, 1.0]
+_KP_V =  [3.0, 2.4, 1.5]
+
 
 _kI_BP = [0., 35.]
 _kI_V =  [0.18, 0.12]
