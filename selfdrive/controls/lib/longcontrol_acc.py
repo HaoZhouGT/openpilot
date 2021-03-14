@@ -122,8 +122,7 @@ def Vanilla_gb_model(ls):
 
 
 _KP_BP = [0., 5., 35.]
-# _KP_V =  [2.4, 1.6, 1.0]
-_KP_V =  [3.0, 2.4, 1.5]
+_KP_V =  [2.4, 1.6, 1.0]
 
 
 _kI_BP = [0., 35.]
@@ -285,7 +284,9 @@ class ACCLongControl(object):
     self.last_output_gb = output_gb
     final_gas = clip(output_gb, 0., gas_max)
     final_brake = -clip(output_gb, -brake_max, 0.)
-    return final_gas, final_brake
+
+    aDesire = self.Up_accel_cmd + self.Ui_accel_cmd
+    return final_gas, final_brake, aDesire
 
   def dummy_update(self, enabled, v_ego, v_cruise, v_target_lead, a_target, jerk_factor, CP):
     # this is a dummy update function to test self.ACCLoC.udpate

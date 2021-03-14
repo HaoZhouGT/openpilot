@@ -405,11 +405,12 @@ class Controls:
     #### it's the controller for ACC #########################################################################
 
 
-    acc_gas, acc_brake = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget,
+    acc_gas, acc_brake, aDesire = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget,
                                         [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
                                         long_plan.jerkFactorDEPRECATED, self.CP) 
     actuators.gas = float(acc_gas) #66, make sure it is float
     actuators.brake = float(acc_brake)
+    aDesire_acc = float(aDesire)
     #66, let's make sure acc_gas and acc_brake are float numbers
 
     # Steering PID loop and lateral MPC
@@ -436,9 +437,9 @@ class Controls:
 
     ACC_vTarget = long_plan.vTarget
     
-    return actuators, ACC_vTarget, a_acc_sol, lac_log
+    return actuators, ACC_vTarget, aDesire_acc, lac_log
 
-  def publish_logs(self, CS, start_time, actuators, v_ACC, a_acc, lac_log):
+  def publish_logs(self, CS, start_time, actuators, v_ACC, aDesire_acc, lac_log):
     """Send actuators and hud commands to the car, send controlsstate and MPC logging"""
 
     CC = car.CarControl.new_message()
@@ -531,7 +532,7 @@ class Controls:
     controlsState.steeringAngleDesiredDeg = float(self.LaC.angle_steers_des)
     controlsState.vTargetLead = float(v_ACC) # not changing the name in log file
 
-    controlsState.aTarget = float(a_acc)
+    controlsState.aTarget = float(aDesire_acc) # this would be the aDesire (Kp*error+Ki*error)
     controlsState.cumLagMs = -self.rk.remaining * 1000.
     controlsState.startMonoTime = int(start_time * 1e9)
     controlsState.forceDecel = bool(force_decel)
@@ -591,12 +592,12 @@ class Controls:
       self.prof.checkpoint("State transition")
 
     # Compute actuators (runs PID loops and lateral MPC)
-    actuators, ACC_vTarget, a_acc, lac_log = self.state_control(CS)
+    actuators, ACC_vTarget, aDesire_acc, lac_log = self.state_control(CS)
 
     self.prof.checkpoint("State Control")
 
     # Publish data
-    self.publish_logs(CS, start_time, actuators, ACC_vTarget, a_acc, lac_log)
+    self.publish_logs(CS, start_time, actuators, ACC_vTarget, aDesire_acc, lac_log)
     self.prof.checkpoint("Sent")
 
   def controlsd_thread(self):
