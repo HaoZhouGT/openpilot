@@ -47,6 +47,7 @@ accel_expo = 4
 T = 1.5 # desired headway
 
 def IDM(vCruise, d_lead, vEgo, v_lead, a_lead):
+  d_lead = max(d_lead, 0.1) # do not have zero values
 	v_rel = vEgo - v_lead
 
 	s = s0 + vEgo * T + vEgo*v_rel/(2*np.sqrt(IDM_a_max*IDM_b_max))
@@ -57,6 +58,8 @@ def IDM(vCruise, d_lead, vEgo, v_lead, a_lead):
 MAX_SPEED_POSSIBLE = 55.
 
 def compute_IDM_accel(v_cruise_setpoint, v_ego, angle_steers, l1, l2, CP):
+  v_cruise_setpoint = min(v_cruise_setpoint, 45.0)
+  v_cruise_setpoint = max(0.1, v_cruise_setpoint)
   # drive limits
   # TODO: Make lims function of speed (more aggressive at low speed).
   a_lim = [-3., 1.5]
