@@ -96,18 +96,10 @@ compute_gb = get_compute_gb()
 
 
 _KP_BP = [0., 5., 35.]
-<<<<<<< HEAD
 _KP_V =  [2.4, 1.6, 1.0]
 
 _kI_BP = [0., 35.]
 _kI_V =  [0.18, 0.12]
-=======
-_KP_V =  [2.0, 1.6, 0.8]
-
-_kI_BP = [0., 35.]
-_kI_V =  [0.24, 0.12] #revert to smaller P and I, due to the additional F gain
->>>>>>> 200164956cc56afc6c5b5edd22afc4710987817c
-
 
       # ret.longitudinalTuning.kpBP = [0., 5., 35.]
       # ret.longitudinalTuning.kpV = [3.6, 2.4, 1.5] #[1.2, 0.8, 0.5] # 66, why the default is so small?
