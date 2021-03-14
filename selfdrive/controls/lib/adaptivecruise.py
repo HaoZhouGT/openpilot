@@ -82,7 +82,7 @@ def compute_IDM_accel(v_cruise_setpoint, v_ego, angle_steers, l1, l2, CP):
   jerk_factor = 0.
 
   ## the default acceleration is for free flow state
-  aTarget = IDM_free(v_cruise_setpoint, l1.dRel, v_ego, l1.vLead, a_lead_p) 
+  aTarget = IDM_free(v_cruise_setpoint, v_ego) 
   if l1 is not None and l1.status:
     #*** process noisy a_lead signal from radar processing ***
     a_lead_p = process_a_lead(l1.aLeadK)
