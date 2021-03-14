@@ -566,7 +566,7 @@ class Controls:
       self.prof.checkpoint("State transition")
 
     # Compute actuators (runs PID loops and lateral MPC)
-    actuators, v_acc, a_acc, lac_log,dt = self.state_control(CS)
+    actuators, v_acc, a_acc, lac_log, dt = self.state_control(CS)
 
     self.prof.checkpoint("State Control")
 
