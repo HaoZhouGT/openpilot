@@ -13,7 +13,7 @@ from selfdrive.car.car_helpers import get_car, get_startup_event, get_one_can
 from selfdrive.car.disable_radar import disable_radar
 from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET
 from selfdrive.controls.lib.drive_helpers import update_v_cruise, initialize_v_cruise
-from selfdrive.controls.lib.longcontrol import STARTING_TARGET_SPEED, LongControl #66, comment out the LoC for MPC
+from selfdrive.controls.lib.longcontrol import LongControl, STARTING_TARGET_SPEED
 from selfdrive.controls.lib.latcontrol_pid import LatControlPID
 from selfdrive.controls.lib.latcontrol_indi import LatControlINDI
 from selfdrive.controls.lib.latcontrol_lqr import LatControlLQR
@@ -23,11 +23,6 @@ from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.controls.lib.longitudinal_planner import LON_MPC_STEP
 from selfdrive.locationd.calibrationd import Calibration
 from selfdrive.hardware import HARDWARE, TICI
-
-
-from selfdrive.controls.lib.longcontrol_acc import ACCLongControl 
-#66, use a different Loc for ACC 
-
 
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
 LANE_DEPARTURE_THRESHOLD = 0.1
@@ -107,10 +102,7 @@ class Controls:
     self.AM = AlertManager()
     self.events = Events()
 
-    self.LoC = LongControl(self.CP, self.CI.compute_gb) # comment the LoC for MPC
-    self.ACCLoC = ACCLongControl() #66, this is the ACC LoC
-
-
+    self.LoC = LongControl(self.CP, self.CI.compute_gb)
     self.VM = VehicleModel(self.CP)
 
     if self.CP.lateralTuning.which() == 'pid':
@@ -388,31 +380,18 @@ class Controls:
 
     if not self.active:
       self.LaC.reset()
-      self.LoC.reset(v_pid=CS.vEgo) #66, reset the LoC for MPC
-      self.ACCLoC.reset(v_pid=CS.vEgo) #66, this is the ACC LoC
+      self.LoC.reset(v_pid=CS.vEgo)
 
     long_plan_age = DT_CTRL * (self.sm.frame - self.sm.rcv_frame['longitudinalPlan'])
     # no greater than dt mpc + dt, to prevent too high extraps
     dt = min(long_plan_age, LON_MPC_STEP + DT_CTRL) + DT_CTRL
 
+    ##66 is there anyway to see what is dt? yes, dt is mostly 0.01s, sometimes 0.02s
     a_acc_sol = long_plan.aStart + (dt / LON_MPC_STEP) * (long_plan.aTarget - long_plan.aStart)
     v_acc_sol = long_plan.vStart + dt * (a_acc_sol + long_plan.aStart) / 2.0
 
     # Gas/Brake PID loop
     actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, long_plan.vTargetFuture, a_acc_sol, self.CP)
-    # actuators.gas = float(0.1)
-    # actuators.brake = float(0.1) # let use ACCLoC to replace them
-    #### it's the controller for ACC #########################################################################
-
-
-    acc_gas, acc_brake, aDesire = self.ACCLoC.update(self.enabled, CS.vEgo, self.v_cruise_kph, long_plan.vTarget,
-                                        [long_plan.aTargetMinDEPRECATED, long_plan.aTargetMaxDEPRECATED], 
-                                        long_plan.jerkFactorDEPRECATED, self.CP) 
-    actuators.gas = float(acc_gas) #66, make sure it is float
-    actuators.brake = float(acc_brake)
-    aDesire_acc = float(aDesire)
-    #66, let's make sure acc_gas and acc_brake are float numbers
-
     # Steering PID loop and lateral MPC
     actuators.steer, actuators.steeringAngleDeg, lac_log = self.LaC.update(self.active, CS, self.CP, lat_plan)
 
@@ -435,16 +414,15 @@ class Controls:
       if left_deviation or right_deviation:
         self.events.add(EventName.steerSaturated)
 
-    ACC_vTarget = long_plan.vTarget
-    
-    return actuators, ACC_vTarget, aDesire_acc, lac_log
+    return actuators, v_acc_sol, a_acc_sol, lac_log, dt
 
-  def publish_logs(self, CS, start_time, actuators, v_ACC, aDesire_acc, lac_log):
+  def publish_logs(self, CS, start_time, actuators, v_acc, a_acc, lac_log, dt):
     """Send actuators and hud commands to the car, send controlsstate and MPC logging"""
 
     CC = car.CarControl.new_message()
     CC.enabled = self.enabled
     CC.actuators = actuators
+    CC.gasDEPRECATED = dt #66 want to see how dt changes 
 
     CC.cruiseControl.override = True
     CC.cruiseControl.cancel = not self.CP.enableCruise or (not self.enabled and CS.cruiseState.enabled)
@@ -504,8 +482,7 @@ class Controls:
     dat.valid = CS.canValid
     controlsState = dat.controlsState
     controlsState.gas = actuators.gas
-    controlsState.brake = actuators.brake
-
+    controlsState.brake = actuators.brake    
     controlsState.alertText1 = self.AM.alert_text_1
     controlsState.alertText2 = self.AM.alert_text_2
     controlsState.alertSize = self.AM.alert_size
@@ -522,17 +499,14 @@ class Controls:
     controlsState.state = self.state
     controlsState.engageable = not self.events.any(ET.NO_ENTRY)
     controlsState.longControlState = self.LoC.long_control_state
-    # controlsState.vPid = float(self.LoC.v_pid)
-    controlsState.vPid = float(self.ACCLoC.v_pid) #66, add ACCLoC's v_pid to controlsState
-
+    controlsState.vPid = float(self.LoC.v_pid)
     controlsState.vCruise = float(self.v_cruise_kph)
     controlsState.upAccelCmd = float(self.LoC.pid.p)
     controlsState.uiAccelCmd = float(self.LoC.pid.i)
     controlsState.ufAccelCmd = float(self.LoC.pid.f)
     controlsState.steeringAngleDesiredDeg = float(self.LaC.angle_steers_des)
-    controlsState.vTargetLead = float(v_ACC) # not changing the name in log file
-
-    controlsState.aTarget = float(aDesire_acc) # this would be the aDesire (Kp*error+Ki*error)
+    controlsState.vTargetLead = float(v_acc)
+    controlsState.aTarget = float(a_acc)
     controlsState.cumLagMs = -self.rk.remaining * 1000.
     controlsState.startMonoTime = int(start_time * 1e9)
     controlsState.forceDecel = bool(force_decel)
@@ -592,12 +566,12 @@ class Controls:
       self.prof.checkpoint("State transition")
 
     # Compute actuators (runs PID loops and lateral MPC)
-    actuators, ACC_vTarget, aDesire_acc, lac_log = self.state_control(CS)
+    actuators, v_acc, a_acc, lac_log,dt = self.state_control(CS)
 
     self.prof.checkpoint("State Control")
 
     # Publish data
-    self.publish_logs(CS, start_time, actuators, ACC_vTarget, aDesire_acc, lac_log)
+    self.publish_logs(CS, start_time, actuators, v_acc, a_acc, lac_log, dt)
     self.prof.checkpoint("Sent")
 
   def controlsd_thread(self):
