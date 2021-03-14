@@ -69,6 +69,7 @@ def compute_IDM_accel(v_cruise_setpoint, v_ego, angle_steers, l1, l2, CP):
   #*** limit max accel in sharp turns
   a_limits, a_pcm = limit_accel_in_turns(v_ego, angle_steers, a_limits, a_pcm, CP)
   jerk_factor = 0.
+  aTarget = float(0.0) # default value if no lead is detected
 
   if l1 is not None and l1.status:
     #*** process noisy a_lead signal from radar processing ***
@@ -81,14 +82,14 @@ def compute_IDM_accel(v_cruise_setpoint, v_ego, angle_steers, l1, l2, CP):
       a_lead_p2 = process_a_lead(l2.aLeadK)
       aTarget2 = IDM(v_cruise_setpoint, l2.dRel, vEgo, l2.vLead, a_lead_p2)
 
-      # listen to lead that makes you go slower
+      # listen to lead that makes the acceleration smaller
       if aTarget2 < aTarget:
         l1 = l2
         aTarget = aTarget2
 
     # l1 is the main lead now
     # we can now limit a_target to a_lim
-    aTarget = np.clip(float(aTarget), a_limits[0], a_limits[1])
+    aTarget = clip(aTarget, a_limits[0], a_limits[1])
 
   return aTarget
 
@@ -106,6 +107,4 @@ class AdaptiveCruise(object):
     self.dead = False
     if cur_time - self.last_cal > 0.5:
       self.dead = True
-
-    self.aTarget=compute_IDM_accel(v_cruise_setpoint, v_ego, angle_steers, lead1, lead2, CP)
-    self.has_lead = self.v_target_lead != MAX_SPEED_POSSIBLE
+    self.aTarget = compute_IDM_accel(v_cruise_setpoint, v_ego, angle_steers, lead1, lead2, CP)
