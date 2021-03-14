@@ -48,11 +48,11 @@ T = 1.5 # desired headway
 
 def IDM(vCruise, d_lead, vEgo, v_lead, a_lead):
   d_lead = max(d_lead, 0.1) # do not have zero values
-	v_rel = vEgo - v_lead
+  v_rel = vEgo - v_lead
 
-	s = s0 + vEgo * T + vEgo*v_rel/(2*np.sqrt(IDM_a_max*IDM_b_max))
-	aTarget = IDM_a_max*(1-(vEgo/vCruise)**accel_expo-(s/d_lead)**2)
-	return aTarget
+  s = s0 + vEgo * T + vEgo*v_rel/(2*np.sqrt(IDM_a_max*IDM_b_max))
+  aTarget = IDM_a_max*(1-(vEgo/vCruise)**accel_expo-(s/d_lead)**2)
+  return aTarget
 
 
 MAX_SPEED_POSSIBLE = 55.
