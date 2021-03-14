@@ -21,7 +21,8 @@ _A_TOTAL_MAX_V = [1.5, 1.9, 3.2]
 _A_TOTAL_MAX_BP = [0., 20., 40.]
 
 def limit_accel_in_turns(v_ego, angle_steers, a_target, a_pcm, CP):
-  #*** this function returns a limited long acceleration allowed, depending on the existing lateral acceleration
+  #*** this function returns a limited long acceleration allowed, depending on the existing lateral 
+  # acceleration
   # this should avoid accelerating when losing the target in turns
   # deg_to_rad = np.pi / 180.  # from can reading to rad
 
@@ -40,13 +41,20 @@ def process_a_lead(a_lead):
   return a_lead
 
 
-IDM_a_max = 1.5 # comfortable max acceleration
+IDM_a_max = 1.0 # comfortable max acceleration
 IDM_b_max = 2.0 # comfortable max deceleration
 s0 = 4.0 # minimum distance
 accel_expo = 4
 T = 1.5 # desired headway
 
-def IDM(vCruise, d_lead, vEgo, v_lead, a_lead):
+
+
+def IDM_free(vCruise, vEgo):
+  aTarget = IDM_a_max*(1-(vEgo/vCruise)**accel_expo)
+  return aTarget
+
+
+def IDM_follow(vCruise, d_lead, vEgo, v_lead, a_lead):
   d_lead = max(d_lead, 0.1) # do not have zero values
   v_rel = vEgo - v_lead
 
@@ -72,18 +80,19 @@ def compute_IDM_accel(v_cruise_setpoint, v_ego, angle_steers, l1, l2, CP):
   #*** limit max accel in sharp turns
   a_limits, a_pcm = limit_accel_in_turns(v_ego, angle_steers, a_limits, a_pcm, CP)
   jerk_factor = 0.
-  aTarget = float(0.0) # default value if no lead is detected
 
+  ## the default acceleration is for free flow state
+  aTarget = IDM_free(v_cruise_setpoint, l1.dRel, v_ego, l1.vLead, a_lead_p) 
   if l1 is not None and l1.status:
     #*** process noisy a_lead signal from radar processing ***
     a_lead_p = process_a_lead(l1.aLeadK)
 
-    aTarget = IDM(v_cruise_setpoint, l1.dRel, v_ego, l1.vLead, a_lead_p)
+    aTarget = IDM_follow(v_cruise_setpoint, l1.dRel, v_ego, l1.vLead, a_lead_p)
 
     if l2 is not None and l2.status:
       #*** process noisy a_lead signal from radar processing ***
       a_lead_p2 = process_a_lead(l2.aLeadK)
-      aTarget2 = IDM(v_cruise_setpoint, l2.dRel, v_ego, l2.vLead, a_lead_p2)
+      aTarget2 = IDM_follow(v_cruise_setpoint, l2.dRel, v_ego, l2.vLead, a_lead_p2)
 
       # listen to lead that makes the acceleration smaller
       if aTarget2 < aTarget:
@@ -104,7 +113,7 @@ class AdaptiveCruise(object):
     self.l1, self.l2 = None, None
     self.dead = True
     self.aTarget = float(0.0) # default
-  def update(self, cur_time, v_cruise_setpoint, v_ego, angle_steers, CP, lead1, lead2): # the update can be called, thus the arguments here can be accessed
+  def update(self, cur_time, v_cruise_setpoint, v_ego, angle_steers, CP, lead1, lead2): 
     # TODO: no longer has anything to do with calibration
     self.last_cal = cur_time
     self.dead = False
