@@ -75,12 +75,12 @@ def compute_IDM_accel(v_cruise_setpoint, v_ego, angle_steers, l1, l2, CP):
     #*** process noisy a_lead signal from radar processing ***
     a_lead_p = process_a_lead(l1.aLeadK)
 
-    aTarget = IDM(v_cruise_setpoint, l1.dRel, vEgo, l1.vLead, a_lead_p)
+    aTarget = IDM(v_cruise_setpoint, l1.dRel, v_ego, l1.vLead, a_lead_p)
 
     if l2 is not None and l2.status:
       #*** process noisy a_lead signal from radar processing ***
       a_lead_p2 = process_a_lead(l2.aLeadK)
-      aTarget2 = IDM(v_cruise_setpoint, l2.dRel, vEgo, l2.vLead, a_lead_p2)
+      aTarget2 = IDM(v_cruise_setpoint, l2.dRel, v_ego, l2.vLead, a_lead_p2)
 
       # listen to lead that makes the acceleration smaller
       if aTarget2 < aTarget:
