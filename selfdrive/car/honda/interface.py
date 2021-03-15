@@ -23,9 +23,9 @@ BOSCH_LONG_FLAG = 2
 
 def compute_gb_honda_bosch(accel, speed):
   if accel>0:
-    result = float(accel)/4.0
+    result = float(accel)/3.5
   else:
-    result = float(accel)/3.0
+    result = float(accel)/3.5
   return float(result)
 
 def compute_gb_honda_nidec(accel, speed):
@@ -207,7 +207,7 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 1.
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.8], [0.24]]
       ret.longitudinalTuning.kpBP = [0., 5., 35.]
-      ret.longitudinalTuning.kpV = [1.2, 0.8, 0.5]
+      ret.longitudinalTuning.kpV = [1.8, 1.2, 0.8] #[1.2, 0.8, 0.5]
       ret.longitudinalTuning.kiBP = [0., 35.]
       ret.longitudinalTuning.kiV = [0.18, 0.12]
 
