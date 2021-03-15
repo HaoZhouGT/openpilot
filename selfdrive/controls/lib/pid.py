@@ -24,6 +24,7 @@ class PIController():
     self.i_rate = 1.0 / rate
     self.sat_limit = sat_limit
     self.convert = convert
+    self.last_setpoint = 0.0
 
     self.reset()
 
