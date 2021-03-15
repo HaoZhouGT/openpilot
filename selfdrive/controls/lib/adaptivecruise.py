@@ -42,8 +42,8 @@ def process_a_lead(a_lead):
 
 
 IDM_a_max = 1.0 # comfortable max acceleration
-IDM_b_max = 2.0 # comfortable max deceleration
-s0 = 4.0 # minimum distance
+IDM_b_max = 1.5 # comfortable max deceleration
+s0 = 2.0 # minimum distance
 accel_expo = 4
 T = 1.5 # desired headway
 
