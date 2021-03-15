@@ -85,4 +85,5 @@ class PIController():
     self.saturated = self._check_saturation(control, check_saturation, error)
 
     self.control = clip(control, self.neg_limit, self.pos_limit)
+    self.last_setpoint = setpoint
     return self.control
