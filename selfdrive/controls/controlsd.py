@@ -387,7 +387,9 @@ class Controls:
     dt = min(long_plan_age, LON_MPC_STEP + DT_CTRL) + DT_CTRL
 
     ##66 is there anyway to see what is dt? yes, dt is mostly 0.01s, sometimes 0.02s
-    a_acc_sol = long_plan.aStart + (dt / LON_MPC_STEP) * (long_plan.aTarget - long_plan.aStart)
+    # a_acc_sol = long_plan.aStart + (dt / LON_MPC_STEP) * (long_plan.aTarget - long_plan.aStart)
+    # change MPC step to 0.05
+    a_acc_sol = long_plan.aStart + (dt / 0.05) * (long_plan.aTarget - long_plan.aStart)
     v_acc_sol = long_plan.vStart + dt * (a_acc_sol + long_plan.aStart) / 2.0
 
     # Gas/Brake PID loop
