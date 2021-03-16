@@ -23,9 +23,9 @@ BOSCH_LONG_FLAG = 2
 
 def compute_gb_honda_bosch(accel, speed):
   if accel>0:
-    result = float(accel)/3.5
+    result = 0.05+float(accel)/3.5
   else:
-    result = float(accel)/3.5
+    result = 0.05+float(accel)/3.5
   return float(result)
 
 def compute_gb_honda_nidec(accel, speed):
@@ -209,7 +209,7 @@ class CarInterface(CarInterfaceBase):
       ret.longitudinalTuning.kpBP = [0., 5., 35.]
       ret.longitudinalTuning.kpV = [0.0, 0.0, 0.0] #[1.2, 0.8, 0.5] [1.8, 1.2, 0.8]
       ret.longitudinalTuning.kiBP = [0., 35.]
-      ret.longitudinalTuning.kiV = [0.001, 0.001] #[0.18, 0.12]
+      ret.longitudinalTuning.kiV = [0.0, 0.0] #[0.18, 0.12]
 
     elif candidate in (CAR.ACCORD, CAR.ACCORD_15, CAR.ACCORDH):
       stop_and_go = True

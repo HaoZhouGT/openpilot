@@ -194,7 +194,10 @@ class Planner():
     # Interpolate 0.05 seconds and save as starting point for next iteration
     # overwrite the mpc solution using the ACC(CF) model solution
     self.a_acc = float(self.AC.aTarget) # always use the aTarget from the AC(CF) model
-    a_acc_sol = self.a_acc_start + (CP.radarTimeStep / LON_MPC_STEP) * (self.a_acc - self.a_acc_start)
+    # a_acc_sol = self.a_acc_start + (CP.radarTimeStep / LON_MPC_STEP) * (self.a_acc - self.a_acc_start)
+    # v_acc_sol = self.v_acc_start + CP.radarTimeStep * (a_acc_sol + self.a_acc_start) / 2.0
+    # 66, this is a change for IDM aTarget
+    a_acc_sol = self.a_acc_start + (CP.radarTimeStep / 0.05) * (self.a_acc - self.a_acc_start)
     v_acc_sol = self.v_acc_start + CP.radarTimeStep * (a_acc_sol + self.a_acc_start) / 2.0
     self.v_acc_next = v_acc_sol
     self.a_acc_next = a_acc_sol
