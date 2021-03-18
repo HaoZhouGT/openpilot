@@ -121,12 +121,12 @@ def Vanilla_gb_model(ls):
 
 
 
-_KP_BP = [0., 5., 35.]
-_KP_V =  [2.4, 1.6, 1.0]
+_KP_BP = [0., 20., 35.]
+_KP_V =  [2.4, 1.5, 1.0]
 
 
 _kI_BP = [0., 35.]
-_kI_V =  [0.18, 0.12]
+_kI_V =  [0.08, 0.06]
 
       # ret.longitudinalTuning.kpBP = [0., 5., 35.]
       # ret.longitudinalTuning.kpV = [3.6, 2.4, 1.5] #[1.2, 0.8, 0.5] # 66, why the default is so small?
@@ -287,7 +287,3 @@ class ACCLongControl(object):
 
     aDesire = self.Up_accel_cmd + self.Ui_accel_cmd
     return final_gas, final_brake, aDesire
-
-  def dummy_update(self, enabled, v_ego, v_cruise, v_target_lead, a_target, jerk_factor, CP):
-    # this is a dummy update function to test self.ACCLoC.udpate
-    return 0.0, 0.0
