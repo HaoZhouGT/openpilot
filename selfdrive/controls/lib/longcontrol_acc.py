@@ -122,11 +122,11 @@ def Vanilla_gb_model(ls):
 
 
 _KP_BP = [0., 20., 35.]
-_KP_V =  [2.4, 1.5, 1.0]
+_KP_V =  [2.4, 1.2, 0.8]
 
 
 _kI_BP = [0., 35.]
-_kI_V =  [0.08, 0.06]
+_kI_V =  [0.12, 0.08]
 
       # ret.longitudinalTuning.kpBP = [0., 5., 35.]
       # ret.longitudinalTuning.kpV = [3.6, 2.4, 1.5] #[1.2, 0.8, 0.5] # 66, why the default is so small?
