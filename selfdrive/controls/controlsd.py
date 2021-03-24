@@ -526,8 +526,8 @@ class Controls:
     controlsState.vPid = float(self.ACCLoC.v_pid) #66, add ACCLoC's v_pid to controlsState
 
     controlsState.vCruise = float(self.v_cruise_kph)
-    controlsState.upAccelCmd = float(self.LoC.pid.p)
-    controlsState.uiAccelCmd = float(self.LoC.pid.i)
+    controlsState.upAccelCmd = float(self.ACCLoC.Up_accel_cmd) # use ACC's PI values, not MPC's PIF values
+    controlsState.uiAccelCmd = float(self.ACCLoC.Ui_accel_cmd)
     controlsState.ufAccelCmd = float(self.LoC.pid.f)
     controlsState.steeringAngleDesiredDeg = float(self.LaC.angle_steers_des)
     controlsState.vTargetLead = float(v_ACC) # not changing the name in log file

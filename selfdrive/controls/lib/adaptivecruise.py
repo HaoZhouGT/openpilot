@@ -57,7 +57,7 @@ _L_SLOPE_BP = [0.,  40]
 _P_SLOPE_V = [1.0, 0.25]
 _P_SLOPE_BP = [0., 40]
 
-def calc_desired_speed(d_lead, d_des, v_lead, a_lead):
+def calc_desired_speed(d_lead, d_des, v_lead, a_lead, vEgo):
   #*** compute desired speed ***
   # the desired speed curve is divided in 4 portions: 
   # 1-constant
@@ -250,7 +250,7 @@ def compute_speed_with_leads(v_ego, angle_steers, v_pid, l1, l2, CP):
     d_des = calc_desired_distance(l1.vLead)
 
     #*** compute desired speed ***
-    v_target_lead, v_coast = calc_desired_speed(l1.dRel, d_des, l1.vLead, a_lead_p)
+    v_target_lead, v_coast = calc_desired_speed(l1.dRel, d_des, l1.vLead, a_lead_p, v_ego)
 
     if l2 is not None and l2.status:
       #*** process noisy a_lead signal from radar processing ***
@@ -260,7 +260,7 @@ def compute_speed_with_leads(v_ego, angle_steers, v_pid, l1, l2, CP):
       d_des2 = calc_desired_distance(l2.vLead)
 
       #*** compute desired speed ***
-      v_target_lead2, v_coast2 = calc_desired_speed(l2.dRel, d_des2, l2.vLead, a_lead_p2)
+      v_target_lead2, v_coast2 = calc_desired_speed(l2.dRel, d_des2, l2.vLead, a_lead_p2, v_ego)
 
       # listen to lead that makes you go slower
       if v_target_lead2 < v_target_lead:
