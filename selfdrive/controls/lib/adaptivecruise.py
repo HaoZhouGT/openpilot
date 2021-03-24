@@ -57,7 +57,7 @@ _L_SLOPE_BP = [0.,  40]
 _P_SLOPE_V = [1.0, 0.25]
 _P_SLOPE_BP = [0., 40]
 
-def calc_desired_speed(d_lead, d_des, v_lead, a_lead, vEgo):
+def calc_desired_speed(d_lead, d_des, v_lead, a_lead):
   #*** compute desired speed ***
   # the desired speed curve is divided in 4 portions: 
   # 1-constant
@@ -250,7 +250,7 @@ def compute_speed_with_leads(v_ego, angle_steers, v_pid, l1, l2, CP):
     d_des = calc_desired_distance(l1.vLead)
 
     #*** compute desired speed ***
-    v_target_lead, v_coast = calc_desired_speed(l1.dRel, d_des, l1.vLead, a_lead_p, v_ego)
+    v_target_lead, v_coast = calc_desired_speed(l1.dRel, d_des, l1.vLead, a_lead_p)
 
     if l2 is not None and l2.status:
       #*** process noisy a_lead signal from radar processing ***
@@ -260,7 +260,7 @@ def compute_speed_with_leads(v_ego, angle_steers, v_pid, l1, l2, CP):
       d_des2 = calc_desired_distance(l2.vLead)
 
       #*** compute desired speed ***
-      v_target_lead2, v_coast2 = calc_desired_speed(l2.dRel, d_des2, l2.vLead, a_lead_p2, v_ego)
+      v_target_lead2, v_coast2 = calc_desired_speed(l2.dRel, d_des2, l2.vLead, a_lead_p2)
 
       # listen to lead that makes you go slower
       if v_target_lead2 < v_target_lead:
@@ -285,23 +285,6 @@ def compute_speed_with_leads(v_ego, angle_steers, v_pid, l1, l2, CP):
 
 
 
-
-# def compute_speed_with_leads(v_ego, angle_steers, v_pid, l1, l2, CP):
-#   # drive limits
-#   # TODO: Make lims function of speed (more aggressive at low speed).
-#   a_lim = [-3., 1.5]
-
-#   #*** set target speed pretty high, as lead hasn't been considered yet
-#   v_target_lead = MAX_SPEED_POSSIBLE
-
-#   # Always 1 for now.
-#   a_pcm = 1
-
-#   jerk_factor = 0.
-#   return v_target_lead, a_lim, a_pcm, jerk_factor
-
-
-
 class AdaptiveCruise(object):
   def __init__(self):
     self.last_cal = 0.
@@ -322,6 +305,3 @@ class AdaptiveCruise(object):
     self.v_target_lead, self.a_target, self.a_pcm, self.jerk_factor = \
       compute_speed_with_leads(v_ego, angle_steers, v_pid, lead1, lead2, CP)
     self.has_lead = self.v_target_lead != MAX_SPEED_POSSIBLE
-
-
-    ### if we comment this function, the error won't occur
