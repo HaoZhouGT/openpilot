@@ -6,7 +6,7 @@ using namespace std;
 
 #define G 9.81
 // #define TR 1.8
-#define TR 1.5 //66, try a small headway
+#define TR 1.3 //66, try a small headway
 
 #define RW(v_ego, v_l) (v_ego * TR - (v_l - v_ego) * TR + v_ego*v_ego/(2*G) - v_l*v_l / (2*G))
 #define NORM_RW_ERROR(v_ego, v_l, p) ((RW(v_ego, v_l) + 4.0 - p)/(sqrt(v_ego + 0.5) + 0.1))

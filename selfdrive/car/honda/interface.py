@@ -25,7 +25,7 @@ BOSCH_LONG_FLAG = 2
 #   return float(accel) / 4.8
 
 def compute_gb_honda_bosch(accel, speed):
-  return float(accel) / 3.5 # based on my test, 3.5 seems to be a good scale
+  return float(accel) / 3.0 # based on my test, 3.5 seems to be a good scale
 
 def compute_gb_honda_nidec(accel, speed):
   creep_brake = 0.0
