@@ -49,6 +49,74 @@ def calc_desired_distance(v_lead):
   return d_offset + v_lead * t_gap
 
 
+IDM_a_max = 1.0 # comfortable max acceleration
+IDM_b_max = 1.5 # comfortable max deceleration
+s0 = 2.0 # minimum distance
+accel_expo = 4
+T = 1.5 # desired headway
+
+
+######################### IDM model ####################################
+def IDM_free(vCruise, vEgo):
+  aTarget = IDM_a_max*(1-(vEgo/vCruise)**accel_expo)
+  return aTarget
+
+
+def IDM_follow(vCruise, d_lead, vEgo, v_lead, a_lead):
+  d_lead = max(d_lead, 0.1) # do not have zero values
+  v_rel = vEgo - v_lead
+
+  s = s0 + vEgo * T + vEgo*v_rel/(2*np.sqrt(IDM_a_max*IDM_b_max))
+  aTarget = IDM_a_max*(1-(vEgo/vCruise)**accel_expo-(s/d_lead)**2)
+  return aTarget
+
+
+MAX_SPEED_POSSIBLE = 55.
+
+def compute_IDM_vTarget(v_cruise_setpoint, v_ego, angle_steers, l1, l2, CP):
+  v_cruise_setpoint = min(v_cruise_setpoint, 45.0)
+  v_cruise_setpoint = max(0.1, v_cruise_setpoint)
+  # drive limits
+  # TODO: Make lims function of speed (more aggressive at low speed).
+  a_lim = [-3., 1.5]
+
+  #*** set accel limits as cruise accel/decel limits ***
+  a_limits= calc_cruise_accel_limits(v_ego)
+  # Always 1 for now.
+  a_pcm = 1
+
+  #*** limit max accel in sharp turns
+  a_limits, a_pcm = limit_accel_in_turns(v_ego, angle_steers, a_limits, a_pcm, CP)
+  jerk_factor = 0.
+
+  ## the default acceleration is for free flow state
+  aTarget = IDM_free(v_cruise_setpoint, v_ego) 
+  if l1 is not None and l1.status:
+    #*** process noisy a_lead signal from radar processing ***
+    a_lead_p = process_a_lead(l1.aLeadK)
+
+    aTarget = IDM_follow(v_cruise_setpoint, l1.dRel, v_ego, l1.vLead, a_lead_p)
+
+    if l2 is not None and l2.status:
+      #*** process noisy a_lead signal from radar processing ***
+      a_lead_p2 = process_a_lead(l2.aLeadK)
+      aTarget2 = IDM_follow(v_cruise_setpoint, l2.dRel, v_ego, l2.vLead, a_lead_p2)
+
+      # listen to lead that makes the acceleration smaller
+      if aTarget2 < aTarget:
+        l1 = l2
+        aTarget = aTarget2
+
+    # l1 is the main lead now
+    # we can now limit a_target to a_lim
+    aTarget = clip(aTarget, a_limits[0], a_limits[1])
+    vTarget = aTarget*0.05 + v_ego
+
+  return float(vTarget)
+
+
+############################# IDM model, but gives vTarget #####################
+
 #linear slope
 _L_SLOPE_V = [0.40, 0.10]
 _L_SLOPE_BP = [0.,  40]
@@ -305,3 +373,5 @@ class AdaptiveCruise(object):
     self.v_target_lead, self.a_target, self.a_pcm, self.jerk_factor = \
       compute_speed_with_leads(v_ego, angle_steers, v_pid, lead1, lead2, CP)
     self.has_lead = self.v_target_lead != MAX_SPEED_POSSIBLE
+    ## this line will overwrite the vTarget using IDM acceleration
+    self.v_target_lead = compute_IDM_vTarget(v_cruise_setpoint, v_ego, angle_steers, lead1, lead2, CP)
