@@ -109,8 +109,8 @@ def compute_IDM_vTarget(v_cruise_setpoint, v_ego, angle_steers, l1, l2, CP):
 
     # l1 is the main lead now
     # we can now limit a_target to a_lim
-    aTarget = clip(aTarget, a_limits[0], a_limits[1])
-    vTarget = aTarget*0.05 + v_ego
+  aTarget = clip(aTarget, a_limits[0], a_limits[1])
+  vTarget = aTarget*0.05 + v_ego
 
   return float(vTarget)
 
