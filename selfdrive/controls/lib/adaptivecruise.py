@@ -362,7 +362,7 @@ class AdaptiveCruise(object):
     self.jerk_factor = 0.0
     self.v_target_lead = 1.0
     self.a_pcm = 1
-  def update(self, cur_time, v_ego, angle_steers, v_pid, CP, lead1, lead2): # the update can be called, thus the arguments here can be accessed
+  def update(self, cur_time, v_cruise_setpoint, v_ego, angle_steers, v_pid, CP, lead1, lead2): # the update can be called, thus the arguments here can be accessed
     # TODO: no longer has anything to do with calibration
     self.last_cal = cur_time
     self.dead = False

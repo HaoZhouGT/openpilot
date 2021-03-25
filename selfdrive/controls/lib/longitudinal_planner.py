@@ -129,7 +129,7 @@ class Planner():
 
     # add an update step for the ACC controller
     # 66, not sure about lead_1 and lead_2, to test it, we first comment out the real function 
-    self.AC.update(cur_time, v_ego, sm['carState'].steeringAngleDeg, v_ego, self.CP, lead_1, lead_2)
+    self.AC.update(cur_time, v_cruise_setpoint, v_ego, sm['carState'].steeringAngleDeg, self.CP, lead_1, lead_2)
     # if it passes, it means the AC.update function has problems, might be lead_2 and lead_2
 
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
