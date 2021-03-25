@@ -21,12 +21,16 @@ EventName = car.CarEvent.EventName
 ALT_BRAKE_FLAG = 1
 BOSCH_LONG_FLAG = 2
 
+# def compute_gb_honda_bosch(accel, speed):
+#   if accel>0:
+#     result = 0.05+float(accel)/3.5
+#   else:
+#     result = 0.05+float(accel)/3.5
+#   return float(result)
+
 def compute_gb_honda_bosch(accel, speed):
-  if accel>0:
-    result = 0.05+float(accel)/3.5
-  else:
-    result = 0.05+float(accel)/3.5
-  return float(result)
+  return float(accel/3.5)
+
 
 def compute_gb_honda_nidec(accel, speed):
   creep_brake = 0.0
