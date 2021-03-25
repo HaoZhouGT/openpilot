@@ -362,7 +362,7 @@ class AdaptiveCruise(object):
     self.jerk_factor = 0.0
     self.v_target_lead = 1.0
     self.a_pcm = 1
-  def update(self, cur_time, v_cruise_setpoint, v_ego, angle_steers, v_pid, CP, lead1, lead2): # the update can be called, thus the arguments here can be accessed
+  def update(self, cur_time, v_cruise_setpoint, v_ego, angle_steers, CP, lead1, lead2): # the update can be called, thus the arguments here can be accessed
     # TODO: no longer has anything to do with calibration
     self.last_cal = cur_time
     self.dead = False
@@ -371,7 +371,7 @@ class AdaptiveCruise(object):
 
     # now we try this function, see whether it can pass 
     self.v_target_lead, self.a_target, self.a_pcm, self.jerk_factor = \
-      compute_speed_with_leads(v_ego, angle_steers, v_pid, lead1, lead2, CP)
+      compute_speed_with_leads(v_ego, angle_steers, v_ego, lead1, lead2, CP)
     self.has_lead = self.v_target_lead != MAX_SPEED_POSSIBLE
     ## this line will overwrite the vTarget using IDM acceleration
     self.v_target_lead = compute_IDM_vTarget(v_cruise_setpoint, v_ego, angle_steers, lead1, lead2, CP)
