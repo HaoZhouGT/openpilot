@@ -25,7 +25,7 @@ BOSCH_LONG_FLAG = 2
 #   return float(accel) / 4.8
 
 def compute_gb_honda_bosch(accel, speed):
-  return float(accel) / 5.0 # based on my test, 3.5 seems to be a good scale
+  return float(accel) / 3.0 # based on my test, 3.5 seems to be a good scale
 
 def compute_gb_honda_nidec(accel, speed):
   creep_brake = 0.0
@@ -207,9 +207,9 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 1.
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.22], [0.066]]
       ret.longitudinalTuning.kpBP = [0., 5., 35.]
-      ret.longitudinalTuning.kpV = [0.6, 0.4, 0.2] #[1.2, 0.8, 0.5]
+      ret.longitudinalTuning.kpV = [1.2, 0.8, 0.5]
       ret.longitudinalTuning.kiBP = [0., 35.]
-      ret.longitudinalTuning.kiV = [0.06, 0.03] #[0.18, 0.12]
+      ret.longitudinalTuning.kiV = [0.18, 0.12]
 
     elif candidate in (CAR.ACCORD, CAR.ACCORD_15, CAR.ACCORDH):
       stop_and_go = True
